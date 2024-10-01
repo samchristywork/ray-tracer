@@ -271,6 +271,18 @@ void render_scene(unsigned char *image) {
     }
 }
 
+void save_image_to_file(const unsigned char *image, const char *filename) {
+    FILE *fp = fopen(filename, "wb");
+    if (!fp) {
+        fprintf(stderr, "Failed to open output file for writing\n");
+        return;
+    }
+
+    fprintf(fp, "P6\n%d %d\n255\n", IMAGE_WIDTH, IMAGE_HEIGHT);
+    fwrite(image, 1, IMAGE_WIDTH * IMAGE_HEIGHT * 3, fp);
+    fclose(fp);
+}
+
 int main() {
     unsigned char *image = malloc(IMAGE_WIDTH * IMAGE_HEIGHT * 3);
     if (image == NULL) {
@@ -279,6 +291,7 @@ int main() {
     }
 
     render_scene(image);
+    save_image_to_file(image, "output.ppm");
 
     free(image);
 }
