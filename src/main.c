@@ -152,6 +152,33 @@ Vec3 trace_ray(Vec3 origin, Vec3 ray_direction, Sphere *spheres, int numSpheres,
         }
     }
 
+    // Plane intersections
+    for (int p = 0; p < numPlanes; ++p) {
+        float t;
+        if (plane_intersect(planes[p], origin, ray_direction, &t) && t < closest_t) {
+            closest_t = t;
+            hit = 1;
+            hit_point = vec_add(origin, vec_scale(ray_direction, closest_t));
+            normal = planes[p].normal;
+            hit_color = planes[p].color;
+            hit_reflection = planes[p].reflection;
+        }
+    }
+
+    // Triangle intersections
+    for (int t = 0; t < numTriangles; ++t) {
+        Vec3 tri_normal;
+        float tri_t;
+        if (triangle_intersect(triangles[t], origin, ray_direction, &tri_t, &tri_normal) && tri_t < closest_t) {
+            closest_t = tri_t;
+            hit = 1;
+            hit_point = vec_add(origin, vec_scale(ray_direction, closest_t));
+            normal = tri_normal;
+            hit_color = triangles[t].color;
+            hit_reflection = triangles[t].reflection;
+        }
+    }
+
     if (hit) {
         float shade = 0;
         for (int i = 0; i < numLights; i++) {
