@@ -221,6 +221,27 @@ void render_scene(unsigned char *image) {
         vec3(0.8f, 0.8f, 0.2f)
     };
     int numLights = sizeof(lights) / sizeof(lights[0]);
+
+    for (int j = 0; j < IMAGE_HEIGHT; ++j) {
+        for (int i = 0; i < IMAGE_WIDTH; ++i) {
+            float u = (float)i / (float)(IMAGE_WIDTH - 1);
+            float v = (float)j / (float)(IMAGE_HEIGHT - 1);
+            Vec3 direction = vec_add(lower_left_corner, vec_add(vec_scale(horizontal, u), vec_scale(vertical, v)));
+            Vec3 ray_direction = vec_norm(vec_sub(direction, origin));
+
+            int pixel_index = ((IMAGE_HEIGHT - 1 - j) * IMAGE_WIDTH + i) * 3;
+
+            Vec3 color = trace_ray(origin, ray_direction, spheres, numSpheres, planes, numPlanes, triangles, numTriangles, lights, numLights, 0);
+
+            color.x *= 254.0f;
+            color.y *= 254.0f;
+            color.z *= 254.0f;
+
+            image[pixel_index + 0] = (unsigned char)color.x;
+            image[pixel_index + 1] = (unsigned char)color.y;
+            image[pixel_index + 2] = (unsigned char)color.z;
+        }
+    }
 }
 
 int main() {
@@ -229,6 +250,8 @@ int main() {
         fprintf(stderr, "Failed to allocate memory for the image\n");
         return 1;
     }
+
+    render_scene(image);
 
     free(image);
 }
