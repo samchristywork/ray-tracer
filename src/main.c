@@ -1,7 +1,7 @@
+#include <float.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <float.h>
 
 #define IMAGE_WIDTH 1600
 #define IMAGE_HEIGHT 1600
@@ -125,6 +125,53 @@ int triangle_intersect(Triangle triangle, Vec3 origin, Vec3 direction, float *t,
         return 1;
     }
     return 0;
+}
+
+Vec3 trace_ray(Vec3 origin, Vec3 ray_direction, Sphere *spheres, int numSpheres, Plane *planes, int numPlanes, Triangle *triangles, int numTriangles, Vec3 *lights, int numLights, int depth) {
+    Vec3 hit_color = vec3(0.0, 0.0, 0.3); // Default color
+    if (depth >= MAX_RECURSION_DEPTH) {
+        return hit_color;
+    }
+
+    float closest_t = FLT_MAX;
+    int hit = 0;
+    float hit_reflection = 0.0f;
+    Vec3 normal, hit_point;
+    Vec3 ambient_light = vec3(0.1f, 0.1f, 0.1f);
+
+    // Sphere intersections
+    for (int k = 0; k < numSpheres; ++k) {
+        float t;
+        if (sphere_intersect(spheres[k], origin, ray_direction, &t) && t < closest_t) {
+            closest_t = t;
+            hit = 1;
+            hit_point = vec_add(origin, vec_scale(ray_direction, closest_t));
+            normal = vec_norm(vec_sub(hit_point, spheres[k].center));
+            hit_color = spheres[k].color;
+            hit_reflection = spheres[k].reflection;
+        }
+    }
+
+    if (hit) {
+        float shade = 0;
+        for (int i = 0; i < numLights; i++) {
+            shade += fmax(vec_dot(normal, lights[i]), 0.0);
+        }
+
+        Vec3 reflection_direction = vec_norm(vec_sub(ray_direction, vec_scale(normal, 2 * vec_dot(ray_direction, normal))));
+        Vec3 reflection_color = trace_ray(hit_point, reflection_direction, spheres, numSpheres, planes, numPlanes, triangles, numTriangles, lights, numLights, depth + 1);
+
+        // Combine direct shading, reflection, and ambient light using the reflection coefficient
+        Vec3 ambient_component = vec_scale(hit_color, 1.0f);
+        Vec3 direct_component = vec_scale(hit_color, shade * (1.0f - hit_reflection));
+        Vec3 reflected_component = vec_scale(reflection_color, hit_reflection);
+
+        Vec3 final_color = vec_add(vec_add(direct_component, reflected_component), ambient_light);
+
+        return final_color;
+    } else {
+        return hit_color;
+    }
 }
 
 int main() {
