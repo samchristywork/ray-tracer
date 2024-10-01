@@ -174,6 +174,55 @@ Vec3 trace_ray(Vec3 origin, Vec3 ray_direction, Sphere *spheres, int numSpheres,
     }
 }
 
+void render_scene(unsigned char *image) {
+    // Define scene objects and lights
+    Sphere spheres[] = {
+        {vec3(-1, -0.25, -1), 0.25f, vec3(1.0f, 0.0f, 0.0f), 0.5f},
+        {vec3(-1, -0.25, -2), 0.25f, vec3(0.0f, 1.0f, 0.0f), 0.5f},
+        {vec3(1, 1, -2), 1.0f, vec3(0.0f, 0.0f, 1.0f), 0.5f}
+    };
+    int numSpheres = sizeof(spheres) / sizeof(spheres[0]);
+
+    Plane planes[] = {
+        {vec3(0, 1, 0), -0.5f, vec3(0.1f, 0.1f, 0.1f), 0.1f},
+    };
+    int numPlanes = sizeof(planes) / sizeof(planes[0]);
+
+    // Why isn't the triangle being colored correctly?
+    Triangle triangles[] = {
+        {
+          .v0=vec3(0.25, 0.5, -1),
+          .v1=vec3(0.0, 0.5, -1),
+          .v2=vec3(0.0, 0.0, -1),
+          .color=vec3(1.0, 0.0, 1.0),
+          .reflection=0.0f
+        }
+    };
+    int numTriangles = sizeof(triangles) / sizeof(triangles[0]);
+
+    // Camera parameters
+    Vec3 origin = vec3(0.0f, 0.0f, 1.0f);
+    Vec3 look_at = vec3(0.0f, 0.0f, 0.0f);
+    Vec3 up = vec3(0.0f, 1.0f, 0.0f);
+    Vec3 w = vec_norm(vec_sub(origin, look_at));
+    Vec3 u = vec_norm(vec_cross(up, w));
+    Vec3 v = vec_cross(w, u);
+    float viewport_height = 2.0f;
+    float viewport_width = 2.0f;
+    float focal_length = 1.0f;
+
+    Vec3 horizontal = vec_scale(u, viewport_width);
+    Vec3 vertical = vec_scale(v, viewport_height);
+    Vec3 lower_left_corner = vec_sub(vec_sub(vec_sub(origin, vec_scale(horizontal, 0.5f)), vec_scale(vertical, 0.5f)), w);
+
+    // Light sources
+    Vec3 lights[] = {
+        vec3(-0.8f, 0.8f, 0.2f),
+        vec3(0.8f, 0.8f, 0.2f)
+    };
+    int numLights = sizeof(lights) / sizeof(lights[0]);
+}
+
 int main() {
     unsigned char *image = malloc(IMAGE_WIDTH * IMAGE_HEIGHT * 3);
     if (image == NULL) {
