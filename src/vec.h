@@ -19,4 +19,6 @@ Vec3 vec_norm(Vec3 a);
 
 Vec3 vec_cross(Vec3 a, Vec3 b);
 
+Vec3 vec_rot(Vec3 v, Vec3 axis, float angle);
+
 #endif
