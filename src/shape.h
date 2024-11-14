@@ -30,4 +30,6 @@ int plane_intersect(Plane plane, Vec3 origin, Vec3 direction, float *t);
 int triangle_intersect(Triangle triangle, Vec3 origin, Vec3 direction, float *t,
                        Vec3 *hit_normal);
 
+Triangle *generateBox(int *n);
+
 #endif

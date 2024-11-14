@@ -1,4 +1,6 @@
 #include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "shape.h"
 
@@ -58,4 +60,56 @@ int triangle_intersect(Triangle triangle, Vec3 origin, Vec3 direction, float *t,
     return 1;
   }
   return 0;
+}
+
+Triangle *generateBox(int *n) {
+  Vec3 colors[6] = {
+      vec3(1.0, 0.0, 0.0), // Red
+      vec3(0.0, 1.0, 0.0), // Green
+      vec3(0.0, 0.0, 1.0), // Blue
+      vec3(1.0, 1.0, 0.0), // Yellow
+      vec3(0.0, 1.0, 1.0), // Cyan
+      vec3(1.0, 0.0, 1.0)  // Magenta
+  };
+
+  Vec3 corners[8] = {
+      vec3(-0.5, -0.5, -0.5),
+      vec3(0.5, -0.5, -0.5),
+      vec3(0.5, 0.5, -0.5),
+      vec3(-0.5, 0.5, -0.5),
+      vec3(-0.5, -0.5, 0.5),
+      vec3(0.5, -0.5, 0.5),
+      vec3(0.5, 0.5, 0.5),
+      vec3(-0.5, 0.5, 0.5)
+  };
+
+  for (int i = 0; i < 8; i++) {
+    corners[i] = vec_scale(corners[i], 0.25);
+    corners[i] = vec_rot(corners[i], vec3(1, 0, 0), 3.141 / 4);
+    corners[i] = vec_rot(corners[i], vec3(0, 1, 0), 3.141 / 4);
+    corners[i] = vec_add(corners[i], vec3(0, 0, -1));
+  }
+
+  Triangle faces[] = {
+      {corners[0], corners[1], corners[2], colors[0], 0.0f},
+      {corners[0], corners[2], corners[3], colors[0], 0.0f},
+      {corners[4], corners[5], corners[6], colors[1], 0.0f},
+      {corners[4], corners[6], corners[7], colors[1], 0.0f},
+      {corners[0], corners[1], corners[5], colors[2], 0.0f},
+      {corners[0], corners[5], corners[4], colors[2], 0.0f},
+      {corners[2], corners[3], corners[7], colors[3], 0.0f},
+      {corners[2], corners[7], corners[6], colors[3], 0.0f},
+      {corners[0], corners[3], corners[7], colors[4], 0.0f},
+      {corners[0], corners[7], corners[4], colors[4], 0.0f},
+      {corners[1], corners[2], corners[6], colors[5], 0.0f},
+      {corners[1], corners[6], corners[5], colors[5], 0.0f}
+  };
+
+  Triangle *ret = malloc(sizeof(faces));
+  for (int i = 0; i < sizeof(faces) / sizeof(faces[0]); i++) {
+    memcpy(&ret[i], &faces[i], sizeof(faces[0]));
+  }
+
+  (*n) = sizeof(faces) / sizeof(faces[0]);
+  return ret;
 }
