@@ -14,7 +14,7 @@
 Vec3 trace_ray(Vec3 origin, Vec3 ray_direction, Sphere *spheres, int numSpheres,
                Plane *planes, int numPlanes, Triangle *triangles,
                int numTriangles, Vec3 *lights, int numLights, int depth) {
-  Vec3 hit_color = vec3(0.0, 0.0, 0.3); // Default color
+  Vec3 hit_color = vec3(0.0, ray_direction.y, 0.3);
   if (depth >= MAX_RECURSION_DEPTH) {
     return hit_color;
   }
@@ -70,9 +70,11 @@ Vec3 trace_ray(Vec3 origin, Vec3 ray_direction, Sphere *spheres, int numSpheres,
   }
 
   if (hit) {
-    float shade = 0;
+    Vec3 diffuse_light = vec3(0.0f, 0.0f, 0.0f);
     for (int i = 0; i < numLights; i++) {
-      shade += fmax(vec_dot(normal, lights[i]), 0.0);
+      Vec3 light_dir = vec_norm(vec_sub(lights[i], hit_point));
+      float intensity = fmax(vec_dot(normal, light_dir), 0.0);
+      diffuse_light = vec_add(diffuse_light, vec_scale(hit_color, intensity));
     }
 
     Vec3 reflection_direction = vec_norm(vec_sub(
@@ -81,11 +83,10 @@ Vec3 trace_ray(Vec3 origin, Vec3 ray_direction, Sphere *spheres, int numSpheres,
         hit_point, reflection_direction, spheres, numSpheres, planes, numPlanes,
         triangles, numTriangles, lights, numLights, depth + 1);
 
-    // Combine direct shading, reflection, and ambient light using the
-    // reflection coefficient
+    // Combine direct shading, reflection, ambient light, and diffuse light
+    // using the reflection coefficient
     Vec3 ambient_component = vec_scale(hit_color, 1.0f);
-    Vec3 direct_component =
-        vec_scale(hit_color, shade * (1.0f - hit_reflection));
+    Vec3 direct_component = vec_scale(diffuse_light, (1.0f - hit_reflection));
     Vec3 reflected_component = vec_scale(reflection_color, hit_reflection);
 
     Vec3 final_color =
@@ -110,13 +111,8 @@ void render_scene(unsigned char *image) {
   };
   int numPlanes = sizeof(planes) / sizeof(planes[0]);
 
-  // Why isn't the triangle being colored correctly?
-  Triangle triangles[] = {{.v0 = vec3(0.25, 0.5, -1),
-                           .v1 = vec3(0.0, 0.5, -1),
-                           .v2 = vec3(0.0, 0.0, -1),
-                           .color = vec3(1.0, 0.0, 1.0),
-                           .reflection = 0.0f}};
-  int numTriangles = sizeof(triangles) / sizeof(triangles[0]);
+  int numTriangles = 0;
+  Triangle *triangles = generateBox(&numTriangles);
 
   // Camera parameters
   Vec3 origin = vec3(0.0f, 0.0f, 1.0f);
@@ -140,6 +136,7 @@ void render_scene(unsigned char *image) {
   Vec3 lights[] = {vec3(-0.8f, 0.8f, 0.2f), vec3(0.8f, 0.8f, 0.2f)};
   int numLights = sizeof(lights) / sizeof(lights[0]);
 
+  // Generate image
   for (int j = 0; j < IMAGE_HEIGHT; ++j) {
     for (int i = 0; i < IMAGE_WIDTH; ++i) {
       float u = (float)i / (float)(IMAGE_WIDTH - 1);
@@ -155,9 +152,9 @@ void render_scene(unsigned char *image) {
           trace_ray(origin, ray_direction, spheres, numSpheres, planes,
                     numPlanes, triangles, numTriangles, lights, numLights, 0);
 
-      color.x *= 254.0f;
-      color.y *= 254.0f;
-      color.z *= 254.0f;
+      color.x *= 255.0f;
+      color.y *= 255.0f;
+      color.z *= 255.0f;
 
       image[pixel_index + 0] = (unsigned char)color.x;
       image[pixel_index + 1] = (unsigned char)color.y;
