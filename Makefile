@@ -18,3 +18,9 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp | $(BUILDDIR)
 
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
+
+run: $(TARGET)
+	$(TARGET)
+
+clean:
+	rm -rf $(BUILDDIR)
