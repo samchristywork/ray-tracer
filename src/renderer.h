@@ -63,3 +63,20 @@ static Vec3 trace(const Ray &ray, const Scene &scene, int depth) {
 
   return clamp3(result, 0.0, 1.0);
 }
+
+inline void render(const Camera &camera, const Scene &scene, int width,
+                   int height, std::vector<uint8_t> &pixels) {
+  pixels.resize(width * height * 3);
+  for (int j = 0; j < height; j++) {
+    for (int i = 0; i < width; i++) {
+      double u = (i + 0.5) / width;
+      double v = (height - 1 - j + 0.5) / height;
+      Ray ray = camera.getRay(u, v);
+      Vec3 color = trace(ray, scene, MAX_DEPTH);
+      int idx = (j * width + i) * 3;
+      pixels[idx + 0] = (uint8_t)(color.x * 255.99);
+      pixels[idx + 1] = (uint8_t)(color.y * 255.99);
+      pixels[idx + 2] = (uint8_t)(color.z * 255.99);
+    }
+  }
+}
