@@ -22,6 +22,14 @@ includes a checkerboard procedural texture.
 
 ## Usage
 
+```
+make        # Build the project
+make run    # Build and render
+make clean  # Remove build artifacts
+```
+
+Output is written to `build/output.png`.
+
 ## Dependencies
 
 ## License
