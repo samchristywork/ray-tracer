@@ -10,6 +10,16 @@ includes a checkerboard procedural texture.
 
 ## Features
 
+- Recursive ray tracing with configurable depth
+- Blinn-Phong shading (ambient, diffuse, and specular)
+- Hard shadows via shadow rays
+- Reflective materials
+- Point lights with distance attenuation
+- Sphere and infinite plane primitives
+- Procedural checkerboard texture
+- Sky gradient background
+- PNG output via stb_image_write
+
 ## Usage
 
 ## Dependencies
