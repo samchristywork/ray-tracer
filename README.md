@@ -32,6 +32,12 @@ Output is written to `build/output.png`.
 
 ## Dependencies
 
+```
+g++
+make
+stb (stb_image_write.h)
+```
+
 ## License
 
 This work is licensed under the GNU General Public License version 3 (GPLv3).
