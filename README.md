@@ -2,6 +2,12 @@
 
 ## Overview
 
+This is a physically-based ray tracing engine written in C++17 that renders 3D
+scenes to PNG images. It implements the core algorithms of ray tracing including
+recursive reflections, shadow casting, and Blinn-Phong shading with multiple
+light sources. The engine supports spheres and infinite planes as primitives, and
+includes a checkerboard procedural texture.
+
 ## Features
 
 ## Usage
