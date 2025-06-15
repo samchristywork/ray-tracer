@@ -6,18 +6,85 @@
 #include "sphere.h"
 
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <memory>
 
-int main() {
-  const int WIDTH = 800;
-  const int HEIGHT = 600;
+static void usage(const char *prog, FILE *out = stderr) {
+  fprintf(out,
+          "Usage: %s [options]\n"
+          "  -w, --width   <int>    Image width  (default: 800)\n"
+          "  -h, --height  <int>    Image height (default: 600)\n"
+          "  -s, --samples <int>    Samples per pixel for anti-aliasing (default: 16)\n"
+          "  -d, --depth   <int>    Max ray bounce depth (default: 6)\n"
+          "  -o, --output  <file>   Output PNG file (required)\n"
+          "      --help             Show this help\n",
+          prog);
+}
+
+static bool parse_int(const char *s, int &out) {
+  char *end;
+  long v = strtol(s, &end, 10);
+  if (end == s || *end != '\0' || v <= 0) return false;
+  out = (int)v;
+  return true;
+}
+
+int main(int argc, char *argv[]) {
+  int width = 800;
+  int height = 600;
+  int samples = 16;
+  int max_depth = 6;
+  const char *output = nullptr;
+
+  for (int i = 1; i < argc; i++) {
+    auto need_arg = [&](const char *flag) -> const char * {
+      if (i + 1 >= argc) {
+        fprintf(stderr, "Error: %s requires an argument\n", flag);
+        exit(1);
+      }
+      return argv[++i];
+    };
+
+    if (!strcmp(argv[i], "--help")) {
+      usage(argv[0], stdout);
+      return 0;
+    } else if (!strcmp(argv[i], "-w") || !strcmp(argv[i], "--width")) {
+      if (!parse_int(need_arg(argv[i]), width)) {
+        fprintf(stderr, "Error: invalid width\n"); return 1;
+      }
+    } else if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--height")) {
+      if (!parse_int(need_arg(argv[i]), height)) {
+        fprintf(stderr, "Error: invalid height\n"); return 1;
+      }
+    } else if (!strcmp(argv[i], "-s") || !strcmp(argv[i], "--samples")) {
+      if (!parse_int(need_arg(argv[i]), samples)) {
+        fprintf(stderr, "Error: invalid samples\n"); return 1;
+      }
+    } else if (!strcmp(argv[i], "-d") || !strcmp(argv[i], "--depth")) {
+      if (!parse_int(need_arg(argv[i]), max_depth)) {
+        fprintf(stderr, "Error: invalid depth\n"); return 1;
+      }
+    } else if (!strcmp(argv[i], "-o") || !strcmp(argv[i], "--output")) {
+      output = need_arg(argv[i]);
+    } else {
+      fprintf(stderr, "Error: unknown option '%s'\n", argv[i]);
+      usage(argv[0], stderr);
+      return 1;
+    }
+  }
+
+  if (!output) {
+    fprintf(stderr, "Error: output file required (-o <file>)\n");
+    return 1;
+  }
 
   // Camera: elevated and slightly back, looking at scene center
   Camera camera({0, 3.5, 3},  // eye
                 {0, 0.8, -4}, // target
                 {0, 1, 0},    // up
                 55.0,         // vertical fov (degrees)
-                (double)WIDTH / HEIGHT);
+                (double)width / height);
 
   Scene scene;
 
@@ -96,13 +163,13 @@ int main() {
 
   // --- Render ---
   std::vector<uint8_t> pixels;
-  render(camera, scene, WIDTH, HEIGHT, pixels);
+  render(camera, scene, width, height, pixels, samples, max_depth);
 
-  if (!stbi_write_png("output.png", WIDTH, HEIGHT, 3, pixels.data(),
-                      WIDTH * 3)) {
-    fprintf(stderr, "Failed to write output.png\n");
+  if (!stbi_write_png(output, width, height, 3, pixels.data(), width * 3)) {
+    fprintf(stderr, "Failed to write %s\n", output);
     return 1;
   }
-  printf("Rendered %dx%d -> output.png\n", WIDTH, HEIGHT);
+  printf("Rendered %dx%d, %d samples, depth %d -> %s\n",
+         width, height, samples, max_depth, output);
   return 0;
 }
