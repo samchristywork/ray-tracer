@@ -8,6 +8,10 @@ recursive reflections, shadow casting, and Blinn-Phong shading with multiple
 light sources. The engine supports spheres and infinite planes as primitives, and
 includes a checkerboard procedural texture.
 
+<p align="center">
+  <img src="./res/screenshot.png" />
+</p>
+
 ## Features
 
 - Recursive ray tracing with configurable depth
