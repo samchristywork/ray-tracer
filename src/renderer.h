@@ -5,9 +5,10 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <cstdio>
+#include <random>
 #include <vector>
 
-static const int MAX_DEPTH = 6;
 
 static Vec3 trace(const Ray &ray, const Scene &scene, int depth) {
   if (depth <= 0)
@@ -65,18 +66,31 @@ static Vec3 trace(const Ray &ray, const Scene &scene, int depth) {
 }
 
 inline void render(const Camera &camera, const Scene &scene, int width,
-                   int height, std::vector<uint8_t> &pixels) {
+                   int height, std::vector<uint8_t> &pixels,
+                   int samples = 16, int max_depth = 6) {
   pixels.resize(width * height * 3);
+  std::mt19937 rng(42);
+  std::uniform_real_distribution<double> dist(0.0, 1.0);
   for (int j = 0; j < height; j++) {
+    int pct = (j * 100) / height;
+    printf("\rRendering: %3d%%  [%.*s%*s]", pct,
+           pct / 5, "####################",
+           20 - pct / 5, "");
+    fflush(stdout);
     for (int i = 0; i < width; i++) {
-      double u = (i + 0.5) / width;
-      double v = (height - 1 - j + 0.5) / height;
-      Ray ray = camera.getRay(u, v);
-      Vec3 color = trace(ray, scene, MAX_DEPTH);
+      Vec3 color = {0, 0, 0};
+      for (int s = 0; s < samples; s++) {
+        double u = (i + dist(rng)) / width;
+        double v = (height - 1 - j + dist(rng)) / height;
+        Ray ray = camera.getRay(u, v);
+        color += trace(ray, scene, max_depth);
+      }
+      color = clamp3(color * (1.0 / samples), 0.0, 1.0);
       int idx = (j * width + i) * 3;
       pixels[idx + 0] = (uint8_t)(color.x * 255.99);
       pixels[idx + 1] = (uint8_t)(color.y * 255.99);
       pixels[idx + 2] = (uint8_t)(color.z * 255.99);
     }
   }
+  printf("\rRendering: 100%%  [####################]\n");
 }
