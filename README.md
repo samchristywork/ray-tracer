@@ -32,6 +32,16 @@ make run    # Build and render
 make clean  # Remove build artifacts
 ```
 
+```
+Usage: raytracer [options]
+  -w, --width   <int>    Image width  (default: 800)
+  -h, --height  <int>    Image height (default: 600)
+  -s, --samples <int>    Samples per pixel for anti-aliasing (default: 16)
+  -d, --depth   <int>    Max ray bounce depth (default: 6)
+  -o, --output  <file>   Output PNG file (required)
+      --help             Show this help
+```
+
 Output is written to `build/output.png`.
 
 ## Dependencies
